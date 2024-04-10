@@ -54,7 +54,7 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    searchPlaceholder: "Search",
+    searchPlaceholder: "Ctrl + K",
     repo: "",
     editLinks: false,
     docsDir: "",
@@ -74,5 +74,5 @@ module.exports = {
   /**
    * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
    */
-  plugins: ["@vuepress/plugin-back-to-top", "@vuepress/plugin-medium-zoom", 'vuepress-plugin-code-copy'],
+  plugins: ["@vuepress/plugin-back-to-top", "@vuepress/plugin-medium-zoom", 'vuepress-plugin-code-copy', 'fulltext-search'],
 };

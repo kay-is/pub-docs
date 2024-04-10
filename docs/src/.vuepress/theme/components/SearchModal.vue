@@ -31,9 +31,12 @@
         >
           <a :href="s.path" @click.prevent>
             <span class="page-title">{{ s.title || s.path }}</span>
-            <span v-if="s.header" class="header"
-              >&gt; {{ s.header.title }}</span
-            >
+            <span v-if="s.header" class="header">&gt; {{ s.header }}</span>
+            <span
+              v-if="s.contentStr && s.contentHighlight"
+              class="content-snippet"
+              v-html="highlightSnippet(s)"
+            ></span>
           </a>
         </li>
       </ul>
@@ -43,7 +46,8 @@
 </template>
 
 <script>
-import matchQuery from "./search-dependencies/match-query";
+// import matchQuery from "./search-dependencies/match-query";
+import flexsearchSvc from "./search-dependencies/flexsearchSvc";
 
 /* global SEARCH_MAX_SUGGESTIONS, SEARCH_PATHS, SEARCH_HOTKEYS */
 export default {
@@ -54,6 +58,7 @@ export default {
       query: "",
       focused: false,
       focusIndex: 0,
+      suggestions: [],
     };
   },
 
@@ -66,51 +71,54 @@ export default {
       return this.focused && this.suggestions && this.suggestions.length;
     },
 
-    suggestions() {
-      const query = this.query.trim().toLowerCase();
-      if (!query) {
-        return;
-      }
+    // suggestions() {
+    //   const query = this.query.trim().toLowerCase();
+    //   if (!query) {
+    //     return;
+    //   }
 
-      const { pages } = this.$site;
-      const max =
-        this.$site.themeConfig.searchMaxSuggestions || SEARCH_MAX_SUGGESTIONS;
-      const localePath = this.$localePath;
-      const res = [];
-      for (let i = 0; i < pages.length; i++) {
-        if (res.length >= max) break;
-        const p = pages[i];
-        // filter out results that do not match current locale
-        if (this.getPageLocalePath(p) !== localePath) {
-          continue;
-        }
+    //   const { pages } = this.$site;
+    //   const max =
+    //     this.$site.themeConfig.searchMaxSuggestions || SEARCH_MAX_SUGGESTIONS;
+    //   const localePath = this.$localePath;
+    //   const res = [];
+    //   for (let i = 0; i < pages.length; i++) {
+    //     if (res.length >= max) break;
+    //     const p = pages[i];
+    //     // filter out results that do not match current locale
+    //     if (this.getPageLocalePath(p) !== localePath) {
+    //       continue;
+    //     }
 
-        // filter out results that do not match searchable paths
-        if (!this.isSearchable(p)) {
-          continue;
-        }
+    //     // filter out results that do not match searchable paths
+    //     if (!this.isSearchable(p)) {
+    //       continue;
+    //     }
 
-        if (matchQuery(query, p)) {
-          res.push(p);
-        } else if (p.headers) {
-          for (let j = 0; j < p.headers.length; j++) {
-            if (res.length >= max) break;
-            const h = p.headers[j];
-            if (h.title && matchQuery(query, p, h.title)) {
-              res.push(
-                Object.assign({}, p, {
-                  path: p.path + "#" + h.slug,
-                  header: h,
-                })
-              );
-            }
-          }
-        }
-      }
-      return res;
-    },
+    //     if (matchQuery(query, p)) {
+    //       res.push(p);
+    //     } else if (p.headers) {
+    //       for (let j = 0; j < p.headers.length; j++) {
+    //         if (res.length >= max) break;
+    //         const h = p.headers[j];
+    //         if (h.title && matchQuery(query, p, h.title)) {
+    //           res.push(
+    //             Object.assign({}, p, {
+    //               path: p.path + "#" + h.slug,
+    //               header: h,
+    //             })
+    //           );
+    //         }
+    //       }
+    //     }
+    //   }
+    //   return res;
+    // },
+
+
 
     // make suggestions align right when there are not enough items
+    
     alignRight() {
       const navCount = (this.$site.themeConfig.nav || []).length;
       const repo = this.$site.repo ? 1 : 0;
@@ -132,7 +140,49 @@ export default {
     document.removeEventListener("keydown", this.onEscapeKey);
   },
 
+  watch: {
+    async query(newQuery) {
+      if (newQuery.length >= 2) {
+        await this.fetchSuggestions();
+      } else {
+        this.suggestions = [];
+      }
+    },
+  },
+
   methods: {
+
+    highlightSnippet(s) {
+      // console.log(s.contentStr)
+      const start = s.contentHighlight[0];
+      const end = start + s.contentHighlight[1];
+      const before = s.contentStr.slice(0, start);
+      const match = s.contentStr.slice(start, end);
+      const after = s.contentStr.slice(end);
+
+      return `${before}<span class="highlight">${match}</span>${after}`;
+    },
+
+    async fetchSuggestions() {
+      const query = this.query.trim().toLowerCase();
+      if (!query) {
+        this.suggestions = [];
+        return;
+      }
+
+      const results = await flexsearchSvc.match(query, query.split(/\s+/));
+      // console.log(results)
+      this.suggestions = results.map((result) => {
+        return {
+          title: result.title,
+          path: result.path + result.slug,
+          header: result.headingStr,
+          contentStr: result.contentStr,
+          contentHighlight: result.contentHighlight
+        };
+      });
+    },
+
     onEscapeKey(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
         this.$emit("close-modal");
@@ -142,7 +192,7 @@ export default {
     handleDocumentClick(event) {
       const modalOuter = this.$refs.modalOuter;
       const modalProper = this.$refs.modalProper;
-      if (
+      if ( modalOuter &&
         modalOuter.contains(event.target) &&
         !modalProper.contains(event.target)
       ) {
@@ -240,6 +290,26 @@ input:focus
   outline-offset none
   border 2px solid var(--AccentColor) !important
   outline none
+
+.search-modal-content .content-snippet
+  display: block
+  margin-top: 0.5em
+  white-space: pre-wrap
+  color: var(--TextColor)
+
+.highlight
+  text-decoration: underline
+  color: var(--AccentColor)
+
+
+.suggestion:hover
+  color: var(--AccentColor) 
+  a 
+    color: var(--AccentColor) 
+    span:not(.content-snippet)
+      color: var(--AccentColor) 
+    .content-snippet
+       color: var(--TextColor) !important
 
 
 .search-modal
