@@ -3,14 +3,12 @@ const default_sidebar_config = require("./theme/configs/default_sidebar_config")
 const CLI_sidebar_config = require("./theme/configs/CLI_sidebar_config");
 const nav_config = require("./theme/configs/Nav_Config");
 
-
 module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
   title: "ArDrive Docs",
-  base: '/',
-
+  base: "/",
 
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
@@ -23,6 +21,42 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/config/#head
    */
   head: [
+    [
+      "meta",
+      {
+        property: "og:title",
+        content: "Ardrive Docs Portal", // Replace 'Your Page Title' with the actual title of the page
+      },
+    ],
+    [
+      "meta",
+      {
+        name: "twitter:title",
+        content: "Ardrive Docs Portal", // Ensure this matches your page title
+      },
+    ],
+    [
+      "meta",
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+    ],
+    [
+      "meta",
+      {
+        name: "twitter:image",
+        content:
+          "https://docs.ardrive.io/images/card-image.png",
+      },
+    ],
+    [
+      "meta",
+      {
+        name: "twitter:site",
+        content: "@ardriveapp", // Replace with your or your site's Twitter handle
+      },
+    ],
     [
       "meta",
       {
@@ -70,9 +104,13 @@ module.exports = {
     },
   },
 
-
   /**
    * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
    */
-  plugins: ["@vuepress/plugin-back-to-top", "@vuepress/plugin-medium-zoom", 'vuepress-plugin-code-copy', 'fulltext-search'],
+  plugins: [
+    "@vuepress/plugin-back-to-top",
+    "@vuepress/plugin-medium-zoom",
+    "vuepress-plugin-code-copy",
+    "fulltext-search",
+  ],
 };
