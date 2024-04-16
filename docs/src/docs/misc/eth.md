@@ -4,17 +4,17 @@ prev: false
 next: false
 ---
 
-# EthAreum
+# EthAReum
 
 ## Overview
 
-EthAreum is a new key derivation protocol that enables the generation of private keys for an Arweave wallet using a signature from an Ethereum wallet. This allows users to create an Arweave wallet directly through an Ethereum wallet provider like [MetaMask](https://metamask.io/).
+EthAReum is a new key derivation protocol that enables the generation of private keys for an Arweave wallet using a signature from an Ethereum wallet. This allows users to create an Arweave wallet directly through an Ethereum wallet provider like [MetaMask](https://metamask.io/).
 
 These generated private keys provide a fully functional Arweave wallet, equipped to perform all standard operations, including holding AR tokens and [Turbo Credits](../turbo/what-is-turbo.md), and uploading data to the Arweave network.
 
 ## Password
 
-The EthAreum protocol incorporates a user-generated password in the process of deriving an Arweave wallet from an Ethereum wallet. This password provides an extra layer of security by contributing additional entropy to the wallet's derivation. It also serves as a critical verification step for wallet access.
+The EthAReum protocol incorporates a user-generated password in the process of deriving an Arweave wallet from an Ethereum wallet. This password provides an extra layer of security by contributing additional entropy to the wallet's derivation. It also serves as a critical verification step for wallet access.
 
 For instance, when creating a new account with ArDrive, users are required to set a password for their wallet. This password is then used for subsequent logins and for encrypting private uploads. The password established during the wallet derivation process on ArDrive will be the same password used for future logins.
 
@@ -36,6 +36,6 @@ Similar to the public address of your generated wallet, the method used to acces
 
 ## Security
 
-EthAreum generates the private keys of an Arweave wallet using a signature from your Ethereum wallet, ensuring that control only extends in one direction. The EthAreum protocol does not access or control the Ethereum wallet used for generation, thereby safeguarding your Ethereum assets.
+EthAReum generates the private keys of an Arweave wallet using a signature from your Ethereum wallet, ensuring that control only extends in one direction. The EthAReum protocol does not access or control the Ethereum wallet used for generation, thereby safeguarding your Ethereum assets.
 
 However, it's important to be vigilant as some malicious dApps or websites may disguise a high-risk authorization transaction as a simple signature request. Always ensure that you only provide signatures to reputable and trusted dApps like [ArDrive](https://app.ardrive.io/).

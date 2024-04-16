@@ -143,7 +143,7 @@ module.exports = [
     title: "Misc.",
     children: [
       {
-        title: "EthAreum",
+        title: "EthAReum",
         path: "/docs/misc/eth"
       },
       {

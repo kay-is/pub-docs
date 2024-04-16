@@ -25,14 +25,14 @@ module.exports = {
       "meta",
       {
         property: "og:title",
-        content: "Ardrive Docs Portal", // Replace 'Your Page Title' with the actual title of the page
+        content: "ArDrive Docs Portal", // Replace 'Your Page Title' with the actual title of the page
       },
     ],
     [
       "meta",
       {
         name: "twitter:title",
-        content: "Ardrive Docs Portal", // Ensure this matches your page title
+        content: "ArDrive Docs Portal", // Ensure this matches your page title
       },
     ],
     [
