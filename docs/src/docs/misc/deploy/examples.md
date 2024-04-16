@@ -1,3 +1,7 @@
+---
+next: false
+---
+
 # Examples
 
 Below are some basic websites built with different languages or frameworks that provide more detailed information on how to configure your dApp for that framework. Each one has been deployed to Arweave itself to show that it functions correctly, and can be accessed through any Arweave gateway by using its TX ID. These are all very basic examples, but if you follow the principles explained, your dApp will function correctly when deployed to the permaweb no matter how big or complex it becomes.

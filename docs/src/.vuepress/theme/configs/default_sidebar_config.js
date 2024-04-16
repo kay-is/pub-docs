@@ -1,3 +1,5 @@
+const { title } = require("../../config");
+
 module.exports = [
   {
     title: "Core-js",
@@ -140,6 +142,10 @@ module.exports = [
   {
     title: "Misc.",
     children: [
+      {
+        title: "EthAreum",
+        path: "/docs/misc/eth"
+      },
       {
         title: "Permasites",
         path: "/docs/misc/permasite"
