@@ -22,7 +22,7 @@ For instance, when creating a new account with ArDrive, users are required to se
 
 ## Public Address
 
-The Public address of the generated Arweave wallet is derived from its private keys. The public address of the generated wallet will be different from the public address of the Ethereum wallet used to generate it. 
+The Public address of the generated Arweave wallet is derived from its public key. The public address of the generated wallet will be different from the public address of the Ethereum wallet used to generate it. 
 
 The exact steps needed to obtain the public address of the generated wallet will differ depending on the user interface of the dApp you use for interacting with the protocol. With ArDrive, the information can be viewed at any time you are logged in to the app by clicking on the user profile icon at the top right of the screen.
 
