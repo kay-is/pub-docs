@@ -12,13 +12,17 @@ EthAReum is a new key derivation protocol that enables the generation of private
 
 These generated private keys provide a fully functional Arweave wallet, equipped to perform all standard operations, including holding AR tokens and [Turbo Credits](../turbo/what-is-turbo.md), and uploading data to the Arweave network.
 
+::: tip Recommended Browser
+For optimal performance, it is recommended MetaMask users access ArDrive using the Chrome browser. While EthAReum functions correctly in most browsers, there are ongoing efforts to resolve some edge case compatibility issues in other environments. 
+:::
+
 ## Password
 
 The EthAReum protocol incorporates a user-generated password in the process of deriving an Arweave wallet from an Ethereum wallet. This password provides an extra layer of security by contributing additional entropy to the wallet's derivation. It also serves as a critical verification step for wallet access.
 
 For instance, when creating a new account with ArDrive, users are required to set a password for their wallet. This password is then used for subsequent logins and for encrypting private uploads. The password established during the wallet derivation process on ArDrive will be the same password used for future logins.
 
-**NOTE**: The password used during the derivation of private keys is permanent and ***CAN NOT*** be changed or recovered by an administrator. It is crucial to keep this password secure.
+**NOTE**: The password used during the derivation of private keys is permanent and ***CAN NOT*** be changed or recovered by an administrator (ArDrive is a decentralized platform and has no account administration). It is crucial to keep this password secure.
 
 ## Public Address
 
