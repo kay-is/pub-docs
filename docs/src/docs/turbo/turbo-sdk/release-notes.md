@@ -6,6 +6,33 @@ Welcome to the documentation page for the Turbo SDK release notes. Here, you wil
 
 ## Releases
 
+### V1.5.0
+
+(2024-04-16)
+
+Bug Fixes
+
+- **fund with AR**: add web esm compatible arweave export
+- export Arconnect and ArweaveSigner from env specific signers
+
+Features
+
+- **crypto payments**: Init fund methods
+- **crypto payments**: Refactor arweave-js out of signer
+- **fund with AR**: Add ToTokenAmount helper utils
+- **fund with AR**: Catch polling error
+- **fund with AR**: Continue polling on request error
+- **fund with AR**: Throw no wallet found as error
+- **signers**: Exports arbundles ArconnectSigner and ArweaveSigner
+
+### V1.4.2
+
+(2024-03-15)
+
+Bug Fixes
+
+- **arbundles**: pin arbundles to v0.9.9 and run tests locally
+
 
 ### V1.4.1
 
