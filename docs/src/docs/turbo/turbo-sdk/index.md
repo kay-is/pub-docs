@@ -93,7 +93,7 @@ The SDK is provided in both CommonJS and ESM formats, and it's compatible with b
 #### Bundlers (Webpack, Rollup, ESbuild, etc.)
 
 ```javascript
-import { TurboFactory } from '@ardrive/turbo-sdk';
+import { TurboFactory } from "@ardrive/turbo-sdk";
 
 const turbo = TurboFactory.unauthenticated();
 const rates = await turbo.getFiatRates();
@@ -102,10 +102,8 @@ const rates = await turbo.getFiatRates();
 #### Browser
 
 ```html
-
 <script type="module">
-  import { TurboFactory } from 'https://unpkg.com/@ardrive/turbo-sdk';
-
+  import { TurboFactory } from "https://unpkg.com/@ardrive/turbo-sdk";
 
   const turbo = TurboFactory.unauthenticated();
   const rates = await turbo.getFiatRates();
@@ -120,7 +118,18 @@ Project's `package.json`:
 
 ```json
 {
-  "type": "commonjs" // or absent
+  "type": "commonjs",
+  "scripts": {
+    "test": "ts-node ./index.ts"
+  },
+  "dependencies": {
+    "@ardrive/turbo-sdk": "latest",
+    "arweave": "^1.14.4",
+    "typescript": "^5.4.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
 }
 ```
 
@@ -130,19 +139,78 @@ Project's `tsconfig.json`:
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "moduleResolution": "Node",
-    "skipLibCheck": true
-  }
+    "moduleResolution": "node",
+    "target": "ES2021",
+    "esModuleInterop": true
+  },
+  "include": ["./index.ts"],
+  "exclude": ["node_modules"]
 }
 ```
 
 Usage:
 
 ```javascript
-const { TurboFactory } = require('@ardrive/turbo-sdk');
+import {
+  TurboFactory,
+  USD,
+  WinstonToTokenAmount,
+  developmentTurboConfiguration,
+} from "@ardrive/turbo-sdk";
+import Arweave from "arweave";
+import fs from "fs";
+import path from "path";
 
-const turbo = TurboFactory.unauthenticated();
-const rates = await turbo.getFiatRates();
+(async () => {
+  /**
+   * Generate a key from the arweave wallet.
+   */
+  const arweave = new Arweave({});
+  const jwk = await arweave.wallets.generate();
+  /**
+   * Use the arweave key to create an authenticated turbo client
+   */
+  const turboAuthClient = TurboFactory.authenticated({
+    privateKey: jwk,
+    ...developmentTurboConfiguration,
+  });
+
+  /**
+   * Fetch the balance for the private key.
+   */
+  const balance = await turboAuthClient.getBalance();
+  console.log("Balance:", balance);
+
+  /**
+   * Fetch the estimated amount of winc returned for 10 USD (1000 cents).
+   */
+  const estimatedWinc = await turboAuthClient.getWincForFiat({
+    amount: USD(10),
+  });
+  console.log("10 USD to winc:", estimatedWinc);
+
+  /**
+   * Post local files to the Turbo service.
+   */
+  console.log("Posting raw file to Turbo service...");
+  const filePath = path.join(__dirname, "../../files/1KB_file");
+  const fileSize = fs.statSync(filePath).size;
+  const uploadResult = await turboAuthClient.uploadFile({
+    fileStreamFactory: () => fs.createReadStream(filePath),
+    fileSizeFactory: () => fileSize,
+    signal: AbortSignal.timeout(10_000), // cancel the upload after 10 seconds
+  });
+  console.log(JSON.stringify(uploadResult, null, 2));
+
+  /**
+   * Tops up a wallet with Credits using tokens.
+   * Default token is AR, using Winston as the unit.
+   */
+  const topUpResult = await turboAuthClient.topUpWithTokens({
+    tokenAmount: WinstonToTokenAmount(100_000_000), // 0.0001 AR
+  });
+  console.log(JSON.stringify(topUpResult, null, 2));
+})();
 ```
 
 #### ESM
@@ -151,7 +219,17 @@ Project's `package.json`:
 
 ```json
 {
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "test": "ts-node ./index.ts"
+  },
+  "dependencies": {
+    "@ardrive/turbo-sdk": "latest",
+    "arweave": "^1.14.4"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
 }
 ```
 
@@ -162,18 +240,79 @@ Project's `tsconfig.json`:
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "skipLibCheck": true
+    "target": "ESNext"
+  },
+  "include": ["./index.ts"],
+  "exclude": ["node_modules"],
+  "ts-node": {
+    "esm": true
   }
 }
 ```
 
 Usage:
 
-```javascript
-import { TurboFactory } from '@ardrive/turbo-sdk/node';
+```typescript
+// or use @ardrive/turbo-sdk/web depending on your environment
+import {
+  TurboFactory,
+  USD,
+  WinstonToTokenAmount,
+  developmentTurboConfiguration,
+} from "@ardrive/turbo-sdk/node";
+import Arweave from "arweave";
+import fs from "fs";
 
-const turbo = TurboFactory.unauthenticated();
-const rates = await turbo.getFiatRates();
+(async () => {
+  /**
+   * Generate a key from the arweave wallet.
+   */
+  const arweave = new Arweave({});
+  const jwk = await arweave.wallets.generate();
+  /**
+   * Use the arweave key to create an authenticated turbo client
+   */
+  const turboAuthClient = TurboFactory.authenticated({
+    privateKey: jwk,
+    ...developmentTurboConfiguration,
+  });
+
+  /**
+   * Fetch the balance for the private key.
+   */
+  const balance = await turboAuthClient.getBalance();
+  console.log("Balance:", balance);
+
+  /**
+   * Fetch the estimated amount of winc returned for 10 USD (1000 cents).
+   */
+  const estimatedWinc = await turboAuthClient.getWincForFiat({
+    amount: USD(10),
+  });
+  console.log("10 USD to winc:", estimatedWinc);
+
+  /**
+   * Post local files to the Turbo service.
+   */
+  console.log("Posting raw file to Turbo service...");
+  const filePath = new URL("../../files/1KB_file", import.meta.url).pathname;
+  const fileSize = fs.statSync(filePath).size;
+  const uploadResult = await turboAuthClient.uploadFile({
+    fileStreamFactory: () => fs.createReadStream(filePath),
+    fileSizeFactory: () => fileSize,
+    signal: AbortSignal.timeout(10_000), // cancel the upload after 10 seconds
+  });
+  console.log(JSON.stringify(uploadResult, null, 2));
+
+  /**
+   * Tops up a wallet with Credits using tokens.
+   * Default token is AR, using Winston as the unit.
+   */
+  const topUpResult = await turboAuthClient.topUpWithTokens({
+    tokenAmount: WinstonToTokenAmount(100_000_000), // 0.0001 AR
+  });
+  console.log(JSON.stringify(topUpResult, null, 2));
+})();
 ```
 
 ### Typescript
@@ -181,7 +320,7 @@ const rates = await turbo.getFiatRates();
 The SDK provides TypeScript types. When you import the SDK in a TypeScript project:
 
 ```typescript
-import { TurboFactory } from '@ardrive/turbo-sdk/web';
+import { TurboFactory } from "@ardrive/turbo-sdk/web";
 
 // or '@ardrive/turbo-sdk/node' for Node.js projects
 ```
@@ -222,7 +361,7 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
 - `getFiatToAR({ currency })` - Returns the current raw fiat to AR conversion rate for a specific currency as reported by third-party pricing oracles.
 
   ```typescript
-  const fiatToAR = await turbo.getFiatToAR({ currency: 'USD' });
+  const fiatToAR = await turbo.getFiatToAR({ currency: "USD" });
   ```
 
 - `getFiatRates()` - Returns the current fiat rates for 1 GiB of data for supported currencies, including all top-up adjustments and fees.
@@ -251,7 +390,7 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
 - `uploadSignedDataItem({ dataItemStreamFactory, dataItemSizeFactory, signal })` - Uploads a signed data item. The provided `dataItemStreamFactory` should produce a NEW signed data item stream each time is it invoked. The `dataItemSizeFactory` is a function that returns the size of the file. The `signal` is an optional [AbortSignal] that can be used to cancel the upload or timeout the request.
 
   ```typescript
-  const filePath = path.join(__dirname, './my-signed-data-item');
+  const filePath = path.join(__dirname, "./my-signed-data-item");
   const dataItemSize = fs.statSync(filePath).size;
   const uploadResponse = await turbo.uploadSignedDataItem({
     dataItemStreamFactory: () => fs.createReadStream(filePath),
@@ -271,10 +410,10 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
     });
 
   // Open checkout session in a browser
-  if (process.platform === 'darwin') {
+  if (process.platform === "darwin") {
     // macOS
     exec(`open ${url}`);
-  } else if (process.platform === 'win32') {
+  } else if (process.platform === "win32") {
     // Windows
     exec(`start "" "${url}"`, { shell: true });
   } else {
@@ -283,13 +422,26 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   }
   ```
 
+- `submitFundTransaction({ txId})` - Submits the transaction ID of a funding transaction to Turbo Payment Service for top up processing. The `txId` is the transaction ID of the transaction to be submitted.
+
+  - Note: use this API if you've already executed your token transfer to the Turbo wallet. Otherwise, consider using `topUpWithTokens` to execute a new token transfer to the Turbo wallet and submit its resulting transaction ID for top up processing all in one go.
+
+  ```typescript
+  const turbo = TurboFactory.unauthenticated(); // defaults to arweave token type
+  const { status, id, ...fundResult } = await turbo.submitFundTransaction({
+    txId: "my-valid-arweave-fund-transaction-id",
+  });
+  ```
+
+````
+
 ### TurboAuthenticatedClient
 
 - `getBalance()` - Issues a signed request to get the credit balance of a wallet measured in AR (measured in Winston Credits, or winc).
 
   ```typescript
   const { winc: balance } = await turbo.getBalance();
-  ```
+````
 
 - `getWincForFiat({ amount, promoCodes })` - Returns the current amount of Winston Credits including all adjustments for the provided fiat currency, amount, and optional promo codes.
 
@@ -297,7 +449,7 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   const { winc, paymentAmount, quotedPaymentAmount, adjustments } =
     await turbo.getWincForFiat({
       amount: USD(100),
-      promoCodes: ['MY_PROMO_CODE'], // promo codes require an authenticated client
+      promoCodes: ["MY_PROMO_CODE"], // promo codes require an authenticated client
     });
   ```
 
@@ -308,14 +460,14 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
     await turbo.createCheckoutSession({
       amount: USD(10.0), // $10.00 USD
       owner: publicArweaveAddress,
-      promoCodes: ['MY_PROMO_CODE'], // promo codes require an authenticated client
+      promoCodes: ["MY_PROMO_CODE"], // promo codes require an authenticated client
     });
 
   // Open checkout session in a browser
-  if (process.platform === 'darwin') {
+  if (process.platform === "darwin") {
     // macOS
     exec(`open ${url}`);
-  } else if (process.platform === 'win32') {
+  } else if (process.platform === "win32") {
     // Windows
     exec(`start "" "${url}"`, { shell: true });
   } else {
@@ -327,7 +479,7 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
 - `uploadFile({ fileStreamFactory, fileSizeFactory, signal })` - Signs and uploads a raw file. The provided `fileStreamFactory` should produce a NEW file data stream each time is it invoked. The `fileSizeFactory` is a function that returns the size of the file. The `signal` is an optional [AbortSignal] that can be used to cancel the upload or timeout the request.
 
   ```typescript
-  const filePath = path.join(__dirname, './my-unsigned-file.txt');
+  const filePath = path.join(__dirname, "./my-unsigned-file.txt");
   const fileSize = fs.stateSync(filePath).size;
   const uploadResult = await turbo.uploadFile({
     fileStreamFactory: () => fs.createReadStream(filePath),
@@ -335,6 +487,22 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
     // no timeout or AbortSignal provided
   });
   ```
+
+- `topUpWithTokens({ tokenAmount, feeMultiplier })` - Tops up the connected wallet with Credits by submitting a payment transaction for the token amount to the Turbo wallet and then submitting that transaction ID to Turbo Payment Service for top up processing.
+
+  - The `tokenAmount` is the amount of tokens in the token type's smallest unit value (e.g: Winston for arweave token type) to fund the wallet with.
+  - the `feeMultiplier` (optional) is the multiplier to apply to the reward for the transaction to modify its chances of being mined. Credits will be added to the wallet balance after the transaction is confirmed on the given blockchain. Defaults to 1.0, meaning no multiplier.
+
+  ```typescript
+  const turbo = TurboFactory.authenticated({ signer, token: "arweave" });
+  ```
+
+const { winc, status, id, ...fundResult } = await turbo.topUpWithTokens({
+tokenAmount: WinstonToTokenAmount(100_000_000), // 0.0001 AR
+feeMultiplier: 1.1, // 10% increase in reward for improved mining chances
+});
+
+```
 
 ## Contributions
 
@@ -344,3 +512,4 @@ If you encounter any issues or have feature requests, please file an issue on ou
 [examples]: https://github.com/ardriveapp/turbo-sdk/tree/main/examples
 [TurboAuthenticatedClient]: #turboauthenticatedclient
 [AbortSignal]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
+```
