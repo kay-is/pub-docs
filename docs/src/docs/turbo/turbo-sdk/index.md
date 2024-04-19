@@ -491,7 +491,8 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
 - `topUpWithTokens({ tokenAmount, feeMultiplier })` - Tops up the connected wallet with Credits by submitting a payment transaction for the token amount to the Turbo wallet and then submitting that transaction ID to Turbo Payment Service for top up processing.
 
   - The `tokenAmount` is the amount of tokens in the token type's smallest unit value (e.g: Winston for arweave token type) to fund the wallet with.
-  - the `feeMultiplier` (optional) is the multiplier to apply to the reward for the transaction to modify its chances of being mined. Credits will be added to the wallet balance after the transaction is confirmed on the given blockchain. Defaults to 1.0, meaning no multiplier.
+    - Note: As of release 1.5.0, only AR tokens are supported with `topUpWithTokens`. 
+  - The `feeMultiplier` (optional) is the multiplier to apply to the reward for the transaction to modify its chances of being mined. Credits will be added to the wallet balance after the transaction is confirmed on the given blockchain. Defaults to 1.0, meaning no multiplier.
 
   ```typescript
   const turbo = TurboFactory.authenticated({ signer, token: "arweave" });
