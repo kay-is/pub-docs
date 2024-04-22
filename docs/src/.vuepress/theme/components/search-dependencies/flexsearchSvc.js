@@ -64,44 +64,76 @@ export default {
   },
   async match(queryString, queryTerms, limit = 7) {
     const searchParams = [
-      {
-        field: 'title',
-        query: queryString,
-        limit,
-        boost: 10,
-      },
-      {
-        field: 'headersStr',
-        query: queryString,
-        limit,
-        boost: 7,
-      },
-      {
-        field: 'content',
-        query: queryString,
-        limit,
-      },
-    ]
-    const searchResult1 = await index.search(searchParams)
-    const searchResult2 = cyrillicIndex ? await cyrillicIndex.search(searchParams) : []
-    const searchResult3 = cjkIndex ? await cjkIndex.search(searchParams) : []
-    const searchResult = _.uniqBy([...searchResult1, ...searchResult2, ...searchResult3], 'path')
-    const result = searchResult.map(page => ({
+      { field: 'title', query: queryString, limit, boost: 10 },
+      { field: 'headersStr', query: queryString, limit, boost: 7 },
+      { field: 'content', query: queryString, limit, boost: 6 }
+    ];
+    const rawResults = [
+      ...(await index.search(searchParams)),
+      ...(cyrillicIndex ? await cyrillicIndex.search(searchParams) : []),
+      ...(cjkIndex ? await cjkIndex.search(searchParams) : [])
+    ];
+    // Map raw results to include additional info first
+    const enrichedResults = rawResults.map(page => ({
       ...page,
-      parentPageTitle: getParentPageTitle(page),
       ...getAdditionalInfo(page, normalizeString(queryString), queryTerms),
-    }))
-
-    const resultByParent = _.groupBy(result, 'parentPageTitle')
-    return _.values(resultByParent)
-      .map(arr =>
-        arr.map((x, i) => {
-          if (i === 0) return x
-          return { ...x, parentPageTitle: null }
-        }),
-      )
-      .flat()
+      parentPageTitle: getParentPageTitle(page)
+    }));
+    // Now prioritize results based on the detailed contentStr
+    const prioritizedResults = this.prioritizeResults(enrichedResults, queryString);
+    return _.uniqBy(prioritizedResults, 'path'); // Ensuring unique paths
   },
+
+  prioritizeResults(results, term) {
+    return results.map(result => {
+      const content = result.contentStr || ""; // Safeguard against undefined contentStr
+      // Creating regex for different scenarios:
+      const regexFull = new RegExp(`(^|\\s)${_.escapeRegExp(term)}([.,\\s]|$)`, 'gi'); // Full match with punctuation
+      const regexLeading = new RegExp(`(^|\\s)${_.escapeRegExp(term)}`, 'gi'); // Leading whitespace
+      const regexTrailing = new RegExp(`${_.escapeRegExp(term)}([.,\\s]|$)`, 'gi'); // Trailing whitespace or punctuation
+      const regexNear = new RegExp(`.{0,3}${_.escapeRegExp(term)}.{0,3}`, 'gi'); // Within 3 characters
+      const regexExact = new RegExp(`\\b${_.escapeRegExp(term)}\\b`, 'gi'); // Exact word boundary
+
+      // Prioritizing with respect to case sensitivity:
+      const regexFullCase = new RegExp(`(^|\\s)${_.escapeRegExp(term)}([.,\\s]|$)`);
+      const regexLeadingCase = new RegExp(`(^|\\s)${_.escapeRegExp(term)}`);
+      const regexTrailingCase = new RegExp(`${_.escapeRegExp(term)}([.,\\s]|$)`);
+      const regexNearCase = new RegExp(`.{0,3}${_.escapeRegExp(term)}.{0,3}`);
+      const regexExactCase = new RegExp(`\\b${_.escapeRegExp(term)}\\b`);
+
+      let priority = 0;
+
+      // Checking case-insensitive matches:
+      if (regexFull.test(content)) {
+        priority = 2; // Full match, lower priority for case insensitive
+      } else if (regexLeading.test(content)) {
+        priority = 4; // Leading space, lower priority for case insensitive
+      } else if (regexTrailing.test(content)) {
+        priority = 6; // Trailing space/punctuation, lower priority for case insensitive
+      } else if (regexNear.test(content)) {
+        priority = 8; // Near match, lower priority for case insensitive
+      } else if (regexExact.test(content)) {
+        priority = 10; // Exact word boundary, lowest priority for case insensitive
+      }
+
+      // Checking case-sensitive matches:
+      if (regexFullCase.test(content)) {
+        priority = 1; // Highest priority for exact match with case sensitive
+      } else if (regexLeadingCase.test(content)) {
+        priority = 3; // Leading space, higher priority for case sensitive
+      } else if (regexTrailingCase.test(content)) {
+        priority = 5; // Trailing space/punctuation, higher priority for case sensitive
+      } else if (regexNearCase.test(content)) {
+        priority = 7; // Near match, higher priority for case sensitive
+      } else if (regexExactCase.test(content)) {
+        priority = 9; // Exact word boundary, higher priority for case sensitive
+      }
+
+      return { ...result, priority };
+    }).sort((a, b) => a.priority - b.priority); // Sort by priority, lowest first for ascending order
+  },
+  
+  
   normalizeString,
 }
 
