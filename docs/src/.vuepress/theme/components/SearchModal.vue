@@ -171,7 +171,7 @@ export default {
       }
 
       const results = await flexsearchSvc.match(query, query.split(/\s+/));
-      console.log(results)
+      // console.log(results)
       this.suggestions = results.map((result) => {
         return {
           title: result.title,
