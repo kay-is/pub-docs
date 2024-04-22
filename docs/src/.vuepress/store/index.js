@@ -10,9 +10,11 @@ export default new Vuex.Store({
   },
   mutations: {
     openSearchModal(state) {
+      // console.log("opening modal")
       state.isSearchModalOpen = true;
     },
     closeSearchModal(state) {
+      // console.log("closing modal")
       state.isSearchModalOpen = false;
     },
     toggleLightMode(state) {

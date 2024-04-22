@@ -66,7 +66,6 @@ export default {
   data() {
     return {
       isSidebarOpen: false,
-      showSearchModal: false,
     };
   },
 
@@ -155,7 +154,7 @@ export default {
           event.preventDefault(); // Prevent default behavior
 
           // Check if modal is already open and toggle accordingly
-          if (this.showSearchModal) {
+          if (this.isSearchModalOpen) {
             this.closeSearchModal();
           } else {
             this.openSearchModal();
@@ -167,11 +166,8 @@ export default {
     },
     openSearchModal() {
     this.$store.commit('openSearchModal');
-    this.showSearchModal = true;
   },
   closeSearchModal() {
-    console.log("close modal")
-    this.showSearchModal = false;
     this.$store.commit('closeSearchModal');
   },
 

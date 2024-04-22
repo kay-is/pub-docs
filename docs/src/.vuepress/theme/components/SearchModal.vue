@@ -67,6 +67,10 @@ export default {
       return this.$site.themeConfig.searchPlaceholder || "";
     },
 
+    isModalOpen() {
+    return this.$store.state.isSearchModalOpen;
+  },
+
     showSuggestions() {
       return this.focused && this.suggestions && this.suggestions.length;
     },
@@ -185,7 +189,7 @@ export default {
 
     onEscapeKey(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
-        this.$emit("close-modal");
+        this.$store.commit("closeSearchModal");
       }
     },
 
@@ -211,7 +215,7 @@ export default {
       }, 200);
     },
     openModal() {
-      this.$emit("open-search-modal");
+      this.$store.commit("openSearchModal");
     },
 
     getPageLocalePath(page) {
@@ -271,7 +275,7 @@ export default {
       this.$router.push(this.suggestions[i].path);
       this.query = "";
       this.focusIndex = 0;
-      this.$emit("close-modal");
+      this.$store.commit("closeSearchModal");
     },
 
     focus(i) {
