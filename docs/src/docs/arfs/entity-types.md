@@ -105,7 +105,7 @@ Metadata JSON {
 }
 ```
 
-<div class='caption'> Pin Files </div>
+### Pinning Files
 
 Since the version v0.13, ArFS suports Pins. Pins are files whose data may be any transaction uploaded to Arweave, that may or may not be owned by the wallet that created the pin.
 
@@ -113,7 +113,7 @@ When a new File Pin is created, the only created transaction is the Metadata Tra
 
 
 
-<div class='caption'>File Data Transaction Example</div>
+### File Data Transaction Example
 
 The File Data Transaction contains limited information about the file, such as the information required to decrypt it, or the Content-Type (mime-type) needed to view in the browser.
 
@@ -124,7 +124,7 @@ Content-Type: "<file mime-type | application/octet-stream>",
  { File Data - Encrypted if private }
 ```
 
-<div class='caption'>File Metadata Transaction Example</div>
+### File Metadata Transaction Example
 
 The the File Metadata Transaction contains the GQL Tags necessary to identify the file within a drive and folder.
 
