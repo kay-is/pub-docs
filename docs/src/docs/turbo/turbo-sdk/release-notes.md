@@ -6,6 +6,48 @@ Welcome to the documentation page for the Turbo SDK release notes. Here, you wil
 
 ## Releases
 
+### 1.9.0 
+
+(2024-05-06)
+
+Bug Fixes
+
+- **eth payments**: setup ETH in default constructor, remove default wait()
+
+Features
+
+- **eth payments**: init eth tx payments 
+
+
+### 1.8.0 
+
+(2024-05-02)
+
+Features
+
+- **solana payments**: init solana token tools for sol payment 
+
+
+### 1.7.0 
+
+(2024-04-25)
+
+Features
+
+- **upload**: allow eth and sol signing for upload
+- **upload**: allow eth/sol signer types
+
+
+### 1.6.0 
+
+(2024-04-24)
+
+Features
+
+- **top up**: allow eth/sol destination for fiat top up 
+- **top up**: allow eth/sol destination for fiat top up 
+
+
 ### V1.5.0
 
 (2024-04-16)

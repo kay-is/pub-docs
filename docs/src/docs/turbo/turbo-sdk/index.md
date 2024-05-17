@@ -36,12 +36,16 @@ yarn add @ardrive/turbo-sdk
 ## Quick Start
 
 ```typescript
-import { TurboFactory } from '@ardrive/turbo-sdk';
+import { TurboFactory, ArweaveSigner } from '@ardrive/turbo-sdk';
 
-// load your JWK from a file or generate a new one
+// load your JWK directly to authenticate
 const jwk = fs.readFileSync('./my-jwk.json');
 const address = arweave.wallets.jwkToAddress(jwk);
 const turbo = TurboFactory.authenticated({ privateKey: jwk });
+
+// or provide your own signer
+const signer = new ArweaveSigner(jwk);
+const turbo = TurboFactory.authenticated({ signer });
 
 // get the wallet balance
 const { winc: balance } = await turbo.getBalance();
@@ -92,14 +96,25 @@ The SDK is provided in both CommonJS and ESM formats, and it's compatible with b
 
 #### Bundlers (Webpack, Rollup, ESbuild, etc.)
 
-```javascript
+CommonJS:
+
+```typescript
 import { TurboFactory } from "@ardrive/turbo-sdk";
 
 const turbo = TurboFactory.unauthenticated();
 const rates = await turbo.getFiatRates();
 ```
 
-#### Browser
+ESM:
+
+```typescript
+import { TurboFactory } from "@ardrive/turbo-sdk/<node/web>";
+
+const turbo = TurboFactory.unauthenticated();
+const rates = await turbo.getFiatRates();
+```
+
+Browser:
 
 ```html
 <script type="module">
@@ -327,50 +342,120 @@ import { TurboFactory } from "@ardrive/turbo-sdk/web";
 
 Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automatically recognized, offering benefits such as type-checking and autocompletion.
 
+Examples:
+
+Examples are available in the [examples] directory. To run examples:
+
+- `yarn example:web` - opens up the example web page
+- `yarn example:cjs` - runs example CJS node script
+- `yarn example:esm` - runs example ESM node script
+
 ## APIs
 
 ### TurboFactory
 
-- `unauthenticated()` - Creates an instance of a client that accesses Turbo's unauthenticated services.
+#### `unauthenticated()`
+
+- Creates an instance of a client that accesses Turbo's unauthenticated services.
 
   ```typescript
   const turbo = TurboFactory.unauthenticated();
   ```
 
-- `authenticated()` - Creates an instance of a client that accesses Turbo's authenticated and unauthenticated services.
+#### `authenticated()`
+
+Creates an instance of a client that accesses Turbo's authenticated and unauthenticated services. Requires either a signer, or private key to be provided.
+
+- Construct Turbo with an Arweave JWK
 
   ```typescript
   const jwk = await arweave.crypto.generateJWK();
   const turbo = TurboFactory.authenticated({ privateKey: jwk });
   ```
 
+- Construct Turbo with an Arweave signer
+
+  ```typescript
+  const signer = new ArweaveSigner(jwk);
+  const turbo = TurboFactory.authenticated({ signer });
+  ```
+
+- Construct Turbo with an Arconnect signer
+
+  ```typescript
+  const signer = new ArweaveSigner(jwk);
+  const turbo = TurboFactory.authenticated({ signer });
+  ```
+
+- Construct Turbo with an ETH signer
+
+  ```typescript
+  const signer = new ArconnectSigner(window.arweaveWallet);
+  const turbo = TurboFactory.authenticated({ signer });
+  ```
+
+- Construct Turbo with an ETH private key
+
+  ```typescript
+  const turbo = TurboFactory.authenticated({
+    privateKey: ethHexadecimalPrivateKey,
+    token: "ethereum",
+  });
+  ```
+
+- Construct Turbo with a SOL signer
+
+  ```typescript
+  const signer = new HexSolanaSigner(bs58.encode(secretKey));
+  const turbo = TurboFactory.authenticated({ signer });
+  ```
+
+- Construct Turbo with a SOL secret Key
+
+  ```typescript
+  const turbo = TurboFactory.authenticated({
+    privateKey: bs58.encode(secretKey),
+    token: "solana",
+  });
+  ```
+
 ### TurboUnauthenticatedClient
 
-- `getSupportedCurrencies()` - Returns the list of currencies supported by the Turbo Payment Service for topping up a user balance of AR Credits (measured in Winston Credits, or winc).
+#### `getSupportedCurrencies()`
+
+- Returns the list of currencies supported by the Turbo Payment Service for topping up a user balance of AR Credits (measured in Winston Credits, or winc).
 
   ```typescript
   const currencies = await turbo.getSupportedCurrencies();
   ```
 
-- `getSupportedCountries()` - Returns the list of countries supported by the Turbo Payment Service's top up workflow.
+#### `getSupportedCountries()`
+
+- Returns the list of countries supported by the Turbo Payment Service's top up workflow.
 
   ```typescript
   const countries = await turbo.getSupportedCountries();
   ```
 
-- `getFiatToAR({ currency })` - Returns the current raw fiat to AR conversion rate for a specific currency as reported by third-party pricing oracles.
+#### `getFiatToAR({ currency })`
+
+- Returns the current raw fiat to AR conversion rate for a specific currency as reported by third-party pricing oracles.
 
   ```typescript
   const fiatToAR = await turbo.getFiatToAR({ currency: "USD" });
   ```
 
-- `getFiatRates()` - Returns the current fiat rates for 1 GiB of data for supported currencies, including all top-up adjustments and fees.
+#### `getFiatRates()`
+
+- Returns the current fiat rates for 1 GiB of data for supported currencies, including all top-up adjustments and fees.
 
   ```typescript
   const rates = await turbo.getFiatRates();
   ```
 
-- `getWincForFiat({ amount })` - Returns the current amount of Winston Credits including all adjustments for the provided fiat currency, amount. To leverage promo codes, see [TurboAuthenticatedClient].
+#### `getWincForFiat({ amount })`
+
+- Returns the current amount of Winston Credits including all adjustments for the provided fiat currency, amount. To leverage promo codes, see [TurboAuthenticatedClient].
 
   ```typescript
   const { winc, paymentAmount, quotedPaymentAmount, adjustments } =
@@ -380,14 +465,18 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
     });
   ```
 
-- `getUploadCosts({ bytes })` - Returns the estimated cost in Winston Credits for the provided file sizes, including all upload adjustments and fees.
+#### `getUploadCosts({ bytes })`
+
+- Returns the estimated cost in Winston Credits for the provided file sizes, including all upload adjustments and fees.
 
   ```typescript
   const [uploadCostForFile] = await turbo.getUploadCosts({ bytes: [1024] });
   const { winc, adjustments } = uploadCostForFile;
   ```
 
-- `uploadSignedDataItem({ dataItemStreamFactory, dataItemSizeFactory, signal })` - Uploads a signed data item. The provided `dataItemStreamFactory` should produce a NEW signed data item stream each time is it invoked. The `dataItemSizeFactory` is a function that returns the size of the file. The `signal` is an optional [AbortSignal] that can be used to cancel the upload or timeout the request.
+#### `uploadSignedDataItem({ dataItemStreamFactory, dataItemSizeFactory, signal })`
+
+- Uploads a signed data item. The provided `dataItemStreamFactory` should produce a NEW signed data item stream each time is it invoked. The `dataItemSizeFactory` is a function that returns the size of the file. The `signal` is an optional [AbortSignal] that can be used to cancel the upload or timeout the request.
 
   ```typescript
   const filePath = path.join(__dirname, "./my-signed-data-item");
@@ -399,7 +488,9 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   });
   ```
 
-- `createCheckoutSession({ amount, owner })` - Creates a Stripe checkout session for a Turbo Top Up with the provided amount, currency, owner. The returned URL can be opened in the browser, all payments are processed by Stripe. To leverage promo codes, see [TurboAuthenticatedClient].
+#### `createCheckoutSession({ amount, owner })`
+
+- Creates a Stripe checkout session for a Turbo Top Up with the provided amount, currency, owner. The returned URL can be opened in the browser, all payments are processed by Stripe. To leverage promo codes, see [TurboAuthenticatedClient].
 
   ```typescript
   const { url, winc, paymentAmount, quotedPaymentAmount, adjustments } =
@@ -422,7 +513,29 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   }
   ```
 
-- `submitFundTransaction({ txId})` - Submits the transaction ID of a funding transaction to Turbo Payment Service for top up processing. The `txId` is the transaction ID of the transaction to be submitted.
+- Top up to ETH or SOL wallets
+
+  ```typescript
+  const turbo = TurboFactory.unauthenticated({ token: "ethereum" });
+
+  const { url, winc, paymentAmount } = await turbo.createCheckoutSession({
+    amount: USD(10.0), // $10.00 USD
+    owner: publicEthereumAddress,
+  });
+  ```
+
+  ```typescript
+  const turbo = TurboFactory.unauthenticated({ token: "solana" });
+
+  const { url, winc, paymentAmount } = await turbo.createCheckoutSession({
+    amount: USD(10.0), // $10.00 USD
+    owner: publicSolanaAddress,
+  });
+  ```
+
+#### `submitFundTransaction({ txId})`
+
+- Submits the transaction ID of a funding transaction to Turbo Payment Service for top up processing. The `txId` is the transaction ID of the transaction to be submitted.
 
   - Note: use this API if you've already executed your token transfer to the Turbo wallet. Otherwise, consider using `topUpWithTokens` to execute a new token transfer to the Turbo wallet and submit its resulting transaction ID for top up processing all in one go.
 
@@ -433,17 +546,19 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   });
   ```
 
-````
-
 ### TurboAuthenticatedClient
 
-- `getBalance()` - Issues a signed request to get the credit balance of a wallet measured in AR (measured in Winston Credits, or winc).
+#### `getBalance()`
+
+- Issues a signed request to get the credit balance of a wallet measured in AR (measured in Winston Credits, or winc).
 
   ```typescript
   const { winc: balance } = await turbo.getBalance();
-````
+  ```
 
-- `getWincForFiat({ amount, promoCodes })` - Returns the current amount of Winston Credits including all adjustments for the provided fiat currency, amount, and optional promo codes.
+#### `getWincForFiat({ amount, promoCodes })`
+
+- Returns the current amount of Winston Credits including all adjustments for the provided fiat currency, amount, and optional promo codes.
 
   ```typescript
   const { winc, paymentAmount, quotedPaymentAmount, adjustments } =
@@ -453,7 +568,9 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
     });
   ```
 
-- `createCheckoutSession({ amount, owner, promoCodes })` - Creates a Stripe checkout session for a Turbo Top Up with the provided amount, currency, owner, and optional promo codes. The returned URL can be opened in the browser, all payments are processed by Stripe. Promo codes require an authenticated client.
+#### `createCheckoutSession({ amount, owner, promoCodes })`
+
+- Creates a Stripe checkout session for a Turbo Top Up with the provided amount, currency, owner, and optional promo codes. The returned URL can be opened in the browser, all payments are processed by Stripe. Promo codes require an authenticated client.
 
   ```typescript
   const { url, winc, paymentAmount, quotedPaymentAmount, adjustments } =
@@ -476,7 +593,9 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   }
   ```
 
-- `uploadFile({ fileStreamFactory, fileSizeFactory, signal })` - Signs and uploads a raw file. The provided `fileStreamFactory` should produce a NEW file data stream each time is it invoked. The `fileSizeFactory` is a function that returns the size of the file. The `signal` is an optional [AbortSignal] that can be used to cancel the upload or timeout the request.
+#### `uploadFile({ fileStreamFactory, fileSizeFactory, signal })`
+
+- Signs and uploads a raw file. The provided `fileStreamFactory` should produce a NEW file data stream each time is it invoked. The `fileSizeFactory` is a function that returns the size of the file. The `signal` is an optional [AbortSignal] that can be used to cancel the upload or timeout the request. `dataItemOpts` is an optional object that can be used to configure tags, target, and anchor for the data item upload.
 
   ```typescript
   const filePath = path.join(__dirname, "./my-unsigned-file.txt");
@@ -484,33 +603,101 @@ Types are exported from `./lib/types/[node/web]/index.d.ts` and should be automa
   const uploadResult = await turbo.uploadFile({
     fileStreamFactory: () => fs.createReadStream(filePath),
     fileSizeFactory: () => fileSize,
-    // no timeout or AbortSignal provided
+    dataItemOpts: {
+      // optional
+      tags: [
+        {
+          name: "Content-Type",
+          value: "text/plain",
+        },
+        {
+          name: "My-Custom-Tag",
+          value: "my-custom-value",
+        },
+      ],
+      // no timeout or AbortSignal provided
+    },
   });
   ```
 
-- `topUpWithTokens({ tokenAmount, feeMultiplier })` - Tops up the connected wallet with Credits by submitting a payment transaction for the token amount to the Turbo wallet and then submitting that transaction ID to Turbo Payment Service for top up processing.
+#### `topUpWithTokens({ tokenAmount, feeMultiplier })`
+
+- Tops up the connected wallet with Credits by submitting a payment transaction for the token amount to the Turbo wallet and then submitting that transaction ID to Turbo Payment Service for top up processing.
 
   - The `tokenAmount` is the amount of tokens in the token type's smallest unit value (e.g: Winston for arweave token type) to fund the wallet with.
-    - Note: As of release 1.5.0, only AR tokens are supported with `topUpWithTokens`. 
+    - Note: As of release 1.5.0, only AR tokens are supported with `topUpWithTokens`.
   - The `feeMultiplier` (optional) is the multiplier to apply to the reward for the transaction to modify its chances of being mined. Credits will be added to the wallet balance after the transaction is confirmed on the given blockchain. Defaults to 1.0, meaning no multiplier.
 
   ```typescript
   const turbo = TurboFactory.authenticated({ signer, token: "arweave" });
+  const { winc, status, id, ...fundResult } = await turbo.topUpWithTokens({
+    tokenAmount: WinstonToTokenAmount(100_000_000), // 0.0001 AR
+    feeMultiplier: 1.1, // 10% increase in reward for improved mining chances
+  });
   ```
 
-const { winc, status, id, ...fundResult } = await turbo.topUpWithTokens({
-tokenAmount: WinstonToTokenAmount(100_000_000), // 0.0001 AR
-feeMultiplier: 1.1, // 10% increase in reward for improved mining chances
-});
+- Top up ETH tokens to ETH wallet
 
-```
+  ```typescript
+  const turbo = TurboFactory.authenticated({ signer, token: "ethereum" });
+
+  const { winc, status, id, ...fundResult } = await turbo.topUpWithTokens({
+    tokenAmount: ETHToTokenAmount(0.00001), // 0.00001 ETH
+  });
+  ```
+
+- Top up Sol tokens to SOL wallet
+
+  ```typescript
+  const turbo = TurboFactory.authenticated({ signer, token: "solana" });
+
+  const { winc, status, id, ...fundResult } = await turbo.topUpWithTokens({
+    tokenAmount: SOLToTokenAmount(0.00001), // 0.00001 SOL
+  });
+  ```
+
+## Developers
+
+### Requirements
+
+- `nvm`
+- `node` (>= 18)
+- `yarn`
+
+### Setup & Build
+
+- `yarn install` - installs dependencies
+- `yarn build` - builds web/node/bundled outputs
+
+### Testing
+
+- `yarn test` - runs integration tests against dev environment (e.g. `https://payment.ardrive.dev` and `https://upload.ardrive.dev`)
+- `yarn test:docker` - runs integration tests against locally running docker containers (recommended)
+- `yarn example:web` - opens up the example web page
+- `yarn example:cjs` - runs example CJS node script
+- `yarn example:esm` - runs example ESM node script
+
+### Linting & Formatting
+
+- `yarn lint:check` - checks for linting errors
+- `yarn lint:fix` - fixes linting errors
+- `yarn format:check` - checks for formatting errors
+- `yarn format:fix` - fixes formatting errors
+
+### Architecture
+
+- Code to interfaces.
+- Prefer type safety over runtime safety.
+- Prefer composition over inheritance.
+- Prefer integration tests over unit tests.
 
 ## Contributions
 
 If you encounter any issues or have feature requests, please file an issue on our GitHub repository. Contributions, pull requests, and feedback are both welcome and encouraged.
 
+For more information on how to contribute, please see [CONTRIBUTING.md](https://github.com/ardriveapp/turbo-sdk/blob/main/CONTRIBUTING.md).
+
 [package.json]: https://github.com/ardriveapp/turbo-sdk/blob/main/package.json
 [examples]: https://github.com/ardriveapp/turbo-sdk/tree/main/examples
 [TurboAuthenticatedClient]: #turboauthenticatedclient
 [AbortSignal]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
-```
