@@ -4,7 +4,7 @@ prev: false
 
 # What Is Turbo?
 
-Turbo, offered by ArDrive, is a streamlined service that simplifies permaweb storage, making it more accessible by allowing users to pay for uploads with credit or debit cards. It integrates two key components: a service that bundles uploads for efficiency and ease, and a payment system designed for straightforward transactions. Turbo Credits, which users can purchase within the ArDrive web app, enable a direct conversion from AR tokens, reflecting the amount of data one can upload. These credits are meticulously calibrated, with the Winston Credit (winc) representing the smallest unit, ensuring users have precise control over their storage needs. As an open-source technology, Turbo encourages community engagement, allowing developers to contribute to its continuous enhancement.
+Turbo, offered by ArDrive, is a streamlined service that simplifies permaweb storage, making it more accessible by allowing users to pay for uploads in a variety of ways, including with credit or debit cards, ETH, SOL, or the traditional AR. It integrates two key components: a service that bundles uploads for efficiency and ease, and a payment system designed for straightforward transactions. Turbo Credits, which users can purchase within the ArDrive web app, enable a direct conversion from AR tokens, reflecting the amount of data one can upload. These credits are meticulously calibrated, with the Winston Credit (winc) representing the smallest unit, ensuring users have precise control over their storage needs. As an open-source technology, Turbo encourages community engagement, allowing developers to contribute to its continuous enhancement.
 
 <div style="text-align: center">
     <table class="inline-table">
@@ -51,7 +51,7 @@ Turbo, offered by ArDrive, is a streamlined service that simplifies permaweb sto
             <th>Maturity</th>
             <td style="text-align:left">
                 <ul>
-                    <li>Run by PDS, the same team that has been operating arweave.net since March 2022, with over 1.8B transactions indexed and accessible.</li>
+                    <li>Run by PDS, the same team that has been operating arweave.net since March 2022, with over 5.55B transactions indexed and accessible.</li>
                     <li>First bundling services launched in October 2022, with as ArDrive Turbo launching in July 2023. 
                         <ul>
                             <li><a target="_blank" href="https://viewblock.io/arweave/address/yCxjLRyXjzHJ4gMZK8HFYiW146dykI9QgP6CSsVXFwk">ar.io Meta Bundler | Arweave Explorer | ViewBlock</a></li>
@@ -65,7 +65,8 @@ Turbo, offered by ArDrive, is a streamlined service that simplifies permaweb sto
             <th>Payments</th>
             <td style="text-align:left">
                 <ul>
-                    <li>Instantly fund your Turbo account with your credit card.</li>
+                    <li>Instantly fund your Turbo account with your credit card or popular crypto tokens.</li>
+                    <li>ETH, SOL, and AR are supported for funding your Turbo account.</li>
                     <li>Leverage other Turbo benefits like Gifting and Coupon Codes.</li>
                 </ul>
             </td>
